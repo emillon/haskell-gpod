@@ -81,7 +81,8 @@ instance Storable Playlist where
 
 itdbParse :: FilePath -> IO (Either String Itdb)
 itdbParse fp =
-  alloca $ \ perr ->
+  alloca $ \ perr -> do
+  poke perr nullPtr
   withCString fp $ \ cs -> do
     p <- c_itdb_parse cs perr
     if p == nullPtr
