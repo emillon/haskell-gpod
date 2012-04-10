@@ -1,4 +1,12 @@
-module Itdb where
+module Itdb ( Itdb
+            , Playlist(..)
+            , Track(..)
+            , itdbPlaylists
+            , itdbPlaylistIsMpl
+            , itdbPlaylistIsPodcasts
+            , itdbParse
+            )
+    where
 
 data Itdb
 
