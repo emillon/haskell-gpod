@@ -11,13 +11,23 @@ module Itdb ( Itdb
 import Foreign.C.String
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
+import Foreign.Storable
 
 data ItdbStruct
 
+-- struct GError {
+--   GQuark       domain;
+--   gint         code;
+--   gchar       *message;
+-- };
 data GError
 
 gErrorFail :: Ptr (Ptr GError) -> IO (Either String a)
-gErrorFail ge = fail "gErrorMessage"
+gErrorFail ge = do
+  err <- peek ge
+  cMsg <- peekByteOff err 8
+  msg <- peekCAString cMsg
+  return $ Left msg
 
 foreign import ccall "itdb.h itdb_parse" c_itdb_parse :: CString
                                                       -> Ptr (Ptr GError)
