@@ -12,24 +12,17 @@ import Foreign.C.String
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.Storable
+import System.Glib.GError
 import System.Glib.GList
 import System.IO.Unsafe
 
 data ItdbStruct
 
--- struct GError {
---   GQuark       domain;
---   gint         code;
---   gchar       *message;
--- };
-data GError
-
 gErrorFail :: Ptr (Ptr GError) -> IO (Either String a)
-gErrorFail ge = do
-  err <- peek ge
-  cMsg <- peekByteOff err 8
-  msg <- peekCAString cMsg
-  return $ Left msg
+gErrorFail pe = do
+  e <- peek pe
+  GError _ _ err <- peek e
+  return $ Left err
 
 foreign import ccall "itdb.h itdb_parse" c_itdb_parse :: CString
                                                       -> Ptr (Ptr GError)
