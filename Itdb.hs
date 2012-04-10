@@ -43,7 +43,7 @@ itdbParse fp =
       then gErrorFail perr
       else return $ Right p
 
-itdbPlaylists :: Itdb -> IO [Playlist]
+itdbPlaylists :: Itdb -> [Playlist]
 itdbPlaylists db = fail "itdbPlaylists : not implemented"
 
 itdbPlaylistIsMpl :: Playlist -> IO Bool

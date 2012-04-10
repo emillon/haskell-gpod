@@ -36,9 +36,8 @@ main = do
     Right db -> displayAll db
 
 displayAll :: Itdb -> IO ()
-displayAll db = do
-  playlists <- itdbPlaylists db
-  mapM_ displayPlaylist playlists
+displayAll =
+  mapM_ displayPlaylist . itdbPlaylists
 
 data PlaylistType = Master | Podcasts | Other
 
