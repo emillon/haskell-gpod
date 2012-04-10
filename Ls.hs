@@ -36,8 +36,11 @@ main = do
     Right db -> displayAll db
 
 displayAll :: Itdb -> IO ()
-displayAll =
-  mapM_ displayPlaylist . itdbPlaylists
+displayAll db = do
+  putStrLn $ show (length ps) ++ " playlists"
+  mapM_ displayPlaylist ps
+    where
+      ps = itdbPlaylists db
 
 data PlaylistType = Master | Podcasts | Other
 
