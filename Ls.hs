@@ -2,6 +2,8 @@ import Control.Monad
 import System.Environment
 import System.Exit
 
+import Itdb
+
 data Conf = Conf { confMountpoint :: FilePath
                  , confPlaylist :: Maybe String
                  }
@@ -22,31 +24,6 @@ usage = do
   progName <- getProgName
   exitWithMsg $ "Usage: " ++ progName ++" <mountpoint> [<playlistname>]\n\n"
              ++ "<playlistname> - name of the playlist to list (optional)"
-
-data Itdb
-
-data Track = Track { trackArtist :: Maybe String
-                   , trackAlbum :: Maybe String
-                   , trackTitle :: Maybe String
-                   }
-
-data Playlist = Playlist { playlistName :: String
-                         , playlistMembers :: [Track]
-                         }
-
-itdbParse :: FilePath -> IO (Either String a)
-itdbParse _ = return $ Left "itdbParse : not implemented"
-
-itdbPlaylists :: Itdb -> IO [Playlist]
-itdbPlaylists db = fail "itdbPlaylists : not implemented"
-
-itdbPlaylistIsMpl :: Playlist -> IO Bool
-itdbPlaylistIsMpl pl =
-  fail "itdbPlaylistIsMpl : not implemented"
-
-itdbPlaylistIsPodcasts :: Playlist -> IO Bool
-itdbPlaylistIsPodcasts pl =
-  fail "itdbPlaylistIsPodcasts : not implemented"
 
 main :: IO ()
 main = do
