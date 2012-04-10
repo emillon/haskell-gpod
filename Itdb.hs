@@ -54,12 +54,12 @@ itdbParse fp =
       else return $ Right p
 
 itdbPlaylists :: Itdb -> [Playlist]
-itdbPlaylists db = fail "itdbPlaylists : not implemented"
+itdbPlaylists db = error "itdbPlaylists : not implemented"
 
 itdbPlaylistIsMpl :: Playlist -> IO Bool
 itdbPlaylistIsMpl pl =
-  fail "itdbPlaylistIsMpl : not implemented"
+  error "itdbPlaylistIsMpl : not implemented"
 
 itdbPlaylistIsPodcasts :: Playlist -> IO Bool
 itdbPlaylistIsPodcasts pl =
-  fail "itdbPlaylistIsPodcasts : not implemented"
+  error "itdbPlaylistIsPodcasts : not implemented"
