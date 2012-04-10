@@ -61,7 +61,7 @@ displayPlaylist pl = do
   putStrLn $ playlistName pl ++ playlistSuffix pt
   let tracks = playlistMembers pl
   putStrLn $ "tracks: " ++ show (length tracks)
-  mapM_ displayTrack  tracks
+  mapM_ displayTrack tracks
 
 displayTrack :: Track -> IO ()
 displayTrack t =
@@ -71,5 +71,5 @@ displayTrack t =
           ++ " - "
           ++ s (trackTitle t)
     where
-      s Nothing = "(null"
+      s Nothing = "(null)"
       s (Just x) = x
