@@ -49,18 +49,14 @@ playlistSuffix Master = " (Master Playlist)"
 playlistSuffix Podcasts = " (Podcasts Playlist)"
 playlistSuffix Other = ""
 
-getTypeOfPlaylist :: Playlist -> IO PlaylistType
-getTypeOfPlaylist pl = do
-  isM <- itdbPlaylistIsMpl pl
-  isPc <- itdbPlaylistIsPodcasts pl
-  return $ case (isM, isPc) of
-    (True, _) -> Master
-    (_, True) -> Podcasts
-    _ -> Other
+getTypeOfPlaylist :: Playlist -> PlaylistType
+getTypeOfPlaylist pl | itdbPlaylistIsMpl pl = Master
+getTypeOfPlaylist pl | itdbPlaylistIsPodcasts pl = Podcasts
+getTypeOfPlaylist _ = Other
 
 displayPlaylist :: Playlist -> IO ()
 displayPlaylist pl = do
-  pt <- getTypeOfPlaylist pl
+  let pt = getTypeOfPlaylist pl
   putStrLn $ playlistName pl ++ playlistSuffix pt
   let tracks = playlistMembers pl
   putStrLn $ "tracks: " ++ show (length tracks)

@@ -65,6 +65,8 @@ fromN p = do
 
 data Playlist = Playlist { playlistName :: String
                          , playlistMembers :: [Track]
+                         , playlistType :: Int
+                         , playlistPodcastFlag :: Bool
                          }
 
 instance Storable Playlist where
@@ -74,10 +76,16 @@ instance Storable Playlist where
   peek p = do
     cn <- peekByteOff p 4
     lm <- peekByteOff p 16
+    pt <- peekByteOff p 20
+    pc <- peekByteOff p 40
     n <- peekCAString cn
     pm <- fromGList lm
     m <- mapM peek pm
-    return $ Playlist n m
+    return $ Playlist { playlistName = n
+                      , playlistMembers = m
+                      , playlistType = pt
+                      , playlistPodcastFlag = pc
+                      }
 
   poke _ _ = error "poking playlist"
 
@@ -101,10 +109,10 @@ safePlaylist db = do
   ptrs <- fromGList gl
   mapM peek ptrs
 
-itdbPlaylistIsMpl :: Playlist -> IO Bool
+itdbPlaylistIsMpl :: Playlist -> Bool
 itdbPlaylistIsMpl pl =
-  error "itdbPlaylistIsMpl : not implemented"
+  playlistType pl == 1
 
-itdbPlaylistIsPodcasts :: Playlist -> IO Bool
-itdbPlaylistIsPodcasts pl =
-  error "itdbPlaylistIsPodcasts : not implemented"
+itdbPlaylistIsPodcasts :: Playlist -> Bool
+itdbPlaylistIsPodcasts =
+  playlistPodcastFlag
