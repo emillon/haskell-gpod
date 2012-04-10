@@ -1,4 +1,3 @@
-import Control.Monad
 import System.Environment
 import System.Exit
 
@@ -42,33 +41,14 @@ displayAll db = do
     where
       ps = itdbPlaylists db
 
-data PlaylistType = Master | Podcasts | Other
-
-playlistSuffix :: PlaylistType -> String
-playlistSuffix Master = " (Master Playlist)"
-playlistSuffix Podcasts = " (Podcasts Playlist)"
-playlistSuffix Other = ""
-
-getTypeOfPlaylist :: Playlist -> PlaylistType
-getTypeOfPlaylist pl | itdbPlaylistIsMpl pl = Master
-getTypeOfPlaylist pl | itdbPlaylistIsPodcasts pl = Podcasts
-getTypeOfPlaylist _ = Other
+playlistSuffix :: Playlist -> String
+playlistSuffix pl | itdbPlaylistIsMpl pl = " (Master Playlist)"
+playlistSuffix pl | itdbPlaylistIsPodcasts pl = " (Podcasts Playlist)"
+playlistSuffix _ = ""
 
 displayPlaylist :: Playlist -> IO ()
 displayPlaylist pl = do
-  let pt = getTypeOfPlaylist pl
-  putStrLn $ playlistName pl ++ playlistSuffix pt
+  putStrLn $ playlistName pl ++ playlistSuffix pl
   let tracks = playlistMembers pl
   putStrLn $ "tracks: " ++ show (length tracks)
-  mapM_ displayTrack tracks
-
-displayTrack :: Track -> IO ()
-displayTrack t =
-  putStrLn $ s (trackArtist t)
-          ++ " - "
-          ++ s (trackAlbum t)
-          ++ " - "
-          ++ s (trackTitle t)
-    where
-      s Nothing = "(null)"
-      s (Just x) = x
+  mapM_ print tracks

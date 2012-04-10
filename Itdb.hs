@@ -8,6 +8,8 @@ module Itdb ( Itdb
             )
     where
 
+import Data.List
+import Data.Maybe
 import Foreign.C.String
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
@@ -34,6 +36,13 @@ data Track = Track { trackArtist :: Maybe String
                    , trackAlbum :: Maybe String
                    , trackTitle :: Maybe String
                    }
+
+instance Show Track where
+
+  show t = intercalate " - " $ catMaybes [ trackArtist t
+                                         , trackAlbum t
+                                         , trackTitle t
+                                         ]
 
 instance Storable Track where
   sizeOf _ = 456
@@ -74,11 +83,11 @@ instance Storable Playlist where
     n <- peekCAString cn
     pm <- fromGList lm
     m <- mapM peek pm
-    return $ Playlist { playlistName = n
-                      , playlistMembers = m
-                      , playlistType = pt
-                      , playlistPodcastFlag = pc
-                      }
+    return Playlist { playlistName = n
+                    , playlistMembers = m
+                    , playlistType = pt
+                    , playlistPodcastFlag = pc
+                    }
 
   poke _ _ = error "poking playlist"
 
