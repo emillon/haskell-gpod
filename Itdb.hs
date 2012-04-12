@@ -8,6 +8,7 @@ module Itdb ( Itdb
             )
     where
 
+import Control.Applicative
 import Data.List
 import Data.Maybe
 import Foreign.C.String
@@ -48,14 +49,10 @@ instance Storable Track where
   sizeOf _ = 456
   alignment _ = 4
 
-  peek p = do
-    ar <- peekByteOff p 16
-    al <- peekByteOff p 12
-    t  <- peekByteOff p 4
-    par <- fromN ar
-    pal <- fromN al
-    pt <- fromN t
-    return $ Track par pal pt
+  peek p =
+    Track <$> (peekByteOff p 16 >>= fromN)
+          <*> (peekByteOff p 12 >>= fromN)
+          <*> (peekByteOff p 4  >>= fromN)
 
   poke _ _ = error "poking track"
 
@@ -75,19 +72,11 @@ instance Storable Playlist where
   sizeOf _ = 152
   alignment _ = 4
 
-  peek p = do
-    cn <- peekByteOff p 4
-    lm <- peekByteOff p 16
-    pt <- peekByteOff p 20
-    pc <- peekByteOff p 40
-    n <- peekCAString cn
-    pm <- fromGList lm
-    m <- mapM peek pm
-    return Playlist { playlistName = n
-                    , playlistMembers = m
-                    , playlistType = pt
-                    , playlistPodcastFlag = pc
-                    }
+  peek p =
+    Playlist <$> (peekByteOff p 4 >>= peekCAString)
+             <*> (peekByteOff p 16 >>= fromGList >>= mapM peek)
+             <*> peekByteOff p 20
+             <*> peekByteOff p 40
 
   poke _ _ = error "poking playlist"
 
