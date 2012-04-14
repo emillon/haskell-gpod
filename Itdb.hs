@@ -20,12 +20,6 @@ import System.IO.Unsafe
 
 data ItdbStruct
 
-gErrorFail :: Ptr (Ptr GError) -> IO (Either String a)
-gErrorFail pe = do
-  e <- peek pe
-  GError _ _ err <- peek e
-  return $ Left err
-
 foreign import ccall "itdb.h itdb_parse"
   c_itdb_parse :: CString -> Ptr (Ptr GError) -> IO (Ptr ItdbStruct)
 
@@ -105,10 +99,10 @@ itdbParse fp =
   withCString fp $ \ cs -> do
     p <- c_itdb_parse cs perr
     if p == nullPtr
-      then gErrorFail perr
-      else do
-        db <- makeItdb p
-        return $ Right db
+      then Left . getError <$> (peek perr >>= peek)
+      else Right <$> makeItdb p
+    where
+      getError (GError _ _ err) = err
 
 foreign import ccall "itdb.h &itdb_free"
   p_itdb_free :: FunPtr (Ptr ItdbStruct -> IO ())
