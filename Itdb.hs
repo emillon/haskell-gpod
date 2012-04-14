@@ -31,7 +31,14 @@ foreign import ccall "itdb.h itdb_parse" c_itdb_parse :: CString
                                                       -> Ptr (Ptr GError)
                                                       -> IO (Ptr ItdbStruct)
 
-type Itdb = Ptr ItdbStruct
+newtype Itdb = Itdb (Ptr ItdbStruct)
+
+instance Show Itdb where
+  show db =
+    show (length ps) ++ " playlists" ++ "\n"
+    ++ intercalate "\n" (map show ps)
+      where
+        ps = itdbPlaylists db
 
 data Track = Track { trackArtist :: Maybe String
                    , trackAlbum :: Maybe String
@@ -39,7 +46,6 @@ data Track = Track { trackArtist :: Maybe String
                    }
 
 instance Show Track where
-
   show t = intercalate " - " $ catMaybes [ trackArtist t
                                          , trackAlbum t
                                          , trackTitle t
@@ -58,15 +64,29 @@ instance Storable Track where
 
 fromN :: CString -> IO (Maybe String)
 fromN p | p == nullPtr = return Nothing
-fromN p = do
-  s <- peekCAString p
-  return $ Just s
+fromN p = Just <$> peekCAString p
 
 data Playlist = Playlist { playlistName :: String
                          , playlistMembers :: [Track]
                          , playlistType :: Int
                          , playlistPodcastFlag :: Bool
                          }
+
+instance Show Playlist where
+  show pl =
+    concat [ playlistName pl
+           , playlistSuffix pl
+           , "\n"
+           , "tracks: "
+           , show (length tracks)
+           , "\n"
+           , concatMap (\ t -> "  - " ++ show t ++ "\n") tracks
+           ]
+    where
+      tracks = playlistMembers pl
+      playlistSuffix pl | itdbPlaylistIsMpl pl = " (Master Playlist)"
+      playlistSuffix pl | itdbPlaylistIsPodcasts pl = " (Podcasts Playlist)"
+      playlistSuffix _ = ""
 
 instance Storable Playlist where
   sizeOf _ = 152
@@ -88,14 +108,14 @@ itdbParse fp =
     p <- c_itdb_parse cs perr
     if p == nullPtr
       then gErrorFail perr
-      else return $ Right p
+      else return $ Right $ Itdb p
 
 itdbPlaylists :: Itdb -> [Playlist]
 itdbPlaylists =
   unsafePerformIO . safePlaylist
 
 safePlaylist :: Itdb -> IO [Playlist]
-safePlaylist db = do
+safePlaylist (Itdb db) = do
   gl <- peekByteOff db 4
   ptrs <- fromGList gl
   mapM peek ptrs

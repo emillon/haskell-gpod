@@ -32,23 +32,4 @@ main = do
   itdbE <- itdbParse $ confMountpoint conf
   case itdbE of
     Left message -> exitWithMsg message
-    Right db -> displayAll db
-
-displayAll :: Itdb -> IO ()
-displayAll db = do
-  putStrLn $ show (length ps) ++ " playlists"
-  mapM_ displayPlaylist ps
-    where
-      ps = itdbPlaylists db
-
-playlistSuffix :: Playlist -> String
-playlistSuffix pl | itdbPlaylistIsMpl pl = " (Master Playlist)"
-playlistSuffix pl | itdbPlaylistIsPodcasts pl = " (Podcasts Playlist)"
-playlistSuffix _ = ""
-
-displayPlaylist :: Playlist -> IO ()
-displayPlaylist pl = do
-  putStrLn $ playlistName pl ++ playlistSuffix pl
-  let tracks = playlistMembers pl
-  putStrLn $ "tracks: " ++ show (length tracks)
-  mapM_ print tracks
+    Right db -> print db
