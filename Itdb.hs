@@ -2,8 +2,6 @@ module Itdb ( Itdb
             , Playlist(..)
             , Track(..)
             , itdbPlaylists
-            , itdbPlaylistIsMpl
-            , itdbPlaylistIsPodcasts
             , itdbParse
             )
     where
@@ -84,8 +82,8 @@ instance Show Playlist where
            ]
     where
       tracks = playlistMembers pl
-      playlistSuffix pl | itdbPlaylistIsMpl pl = " (Master Playlist)"
-      playlistSuffix pl | itdbPlaylistIsPodcasts pl = " (Podcasts Playlist)"
+      playlistSuffix pl | playlistType pl == 1 = " (Master Playlist)"
+      playlistSuffix pl | playlistPodcastFlag pl = " (Podcasts Playlist)"
       playlistSuffix _ = ""
 
 instance Storable Playlist where
@@ -130,11 +128,3 @@ safePlaylist (Itdb p) =
   withForeignPtr p $ \ db -> peekByteOff db 4
                          >>= fromGList
                          >>= mapM peek
-
-itdbPlaylistIsMpl :: Playlist -> Bool
-itdbPlaylistIsMpl pl =
-  playlistType pl == 1
-
-itdbPlaylistIsPodcasts :: Playlist -> Bool
-itdbPlaylistIsPodcasts =
-  playlistPodcastFlag
