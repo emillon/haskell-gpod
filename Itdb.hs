@@ -12,6 +12,7 @@ import Control.Applicative
 import Data.List
 import Data.Maybe
 import Foreign.C.String
+import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.Storable
@@ -27,11 +28,10 @@ gErrorFail pe = do
   GError _ _ err <- peek e
   return $ Left err
 
-foreign import ccall "itdb.h itdb_parse" c_itdb_parse :: CString
-                                                      -> Ptr (Ptr GError)
-                                                      -> IO (Ptr ItdbStruct)
+foreign import ccall "itdb.h itdb_parse"
+  c_itdb_parse :: CString -> Ptr (Ptr GError) -> IO (Ptr ItdbStruct)
 
-newtype Itdb = Itdb (Ptr ItdbStruct)
+newtype Itdb = Itdb (ForeignPtr ItdbStruct)
 
 instance Show Itdb where
   show db =
@@ -108,17 +108,28 @@ itdbParse fp =
     p <- c_itdb_parse cs perr
     if p == nullPtr
       then gErrorFail perr
-      else return $ Right $ Itdb p
+      else do
+        db <- makeItdb p
+        return $ Right db
+
+foreign import ccall "itdb.h &itdb_free"
+  p_itdb_free :: FunPtr (Ptr ItdbStruct -> IO ())
+
+makeItdb :: Ptr ItdbStruct -> IO Itdb
+makeItdb p = do
+  fp <- newForeignPtr_ p -- itdb_free should be added to finalizers
+  {-addForeignPtrFinalizer p_itdb_free fp-}
+  return $ Itdb fp
 
 itdbPlaylists :: Itdb -> [Playlist]
 itdbPlaylists =
   unsafePerformIO . safePlaylist
 
 safePlaylist :: Itdb -> IO [Playlist]
-safePlaylist (Itdb db) = do
-  gl <- peekByteOff db 4
-  ptrs <- fromGList gl
-  mapM peek ptrs
+safePlaylist (Itdb p) =
+  withForeignPtr p $ \ db -> peekByteOff db 4
+                         >>= fromGList
+                         >>= mapM peek
 
 itdbPlaylistIsMpl :: Playlist -> Bool
 itdbPlaylistIsMpl pl =
